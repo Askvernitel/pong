@@ -5,8 +5,9 @@ const CONFIG = {
   AGENT_RADIUS: 40,
   MOVE_SPEED: 2,
   ATTACK_SPEED: 4,
-  BASE_HAND_LEN: 75,
+  BASE_HAND_LEN: 60,
   HAND_EXTRA_RANGE: 40,
+  HAND_BASE_ANGLE: 20,
   HAND_ATTACK_SPEED: 6,
   HAND_COLLISION_DMG: 5,
   BODY_COLLISION_DMG: 20,
@@ -67,16 +68,16 @@ class Agent {
 
     this.hands = [
       {
-        angle: 15,
-        targetAngle: 15,
+        angle: CONFIG.HAND_BASE_ANGLE,
+        targetAngle: CONFIG.HAND_BASE_ANGLE,
         len: CONFIG.BASE_HAND_LEN,
         targetLen: CONFIG.BASE_HAND_LEN,
         extending: false,
         retracting: false,
       },
       {
-        angle: -15,
-        targetAngle: -15,
+        angle: -CONFIG.HAND_BASE_ANGLE,
+        targetAngle: -CONFIG.HAND_BASE_ANGLE,
         len: CONFIG.BASE_HAND_LEN,
         targetLen: CONFIG.BASE_HAND_LEN,
         extending: false,
@@ -168,28 +169,28 @@ class Agent {
           moveX = dir.x * CONFIG.MOVE_SPEED;
           moveY = dir.y * CONFIG.MOVE_SPEED;
         }
-        this.setHandPositions(15, -15);
+        this.setHandPositions(CONFIG.HAND_BASE_ANGLE, -CONFIG.HAND_BASE_ANGLE);
         break;
 
       case 1: // Backward
         const backDir = Utils.normalize(-dx, -dy);
         moveX = backDir.x * CONFIG.MOVE_SPEED;
         moveY = backDir.y * CONFIG.MOVE_SPEED;
-        this.setHandPositions(15, -15);
+        this.setHandPositions(CONFIG.HAND_BASE_ANGLE, -CONFIG.HAND_BASE_ANGLE);
         break;
 
       case 2: // Strafe right
         const rightDir = Utils.normalize(dx, dy);
         moveX = -rightDir.y * CONFIG.MOVE_SPEED;
         moveY = rightDir.x * CONFIG.MOVE_SPEED;
-        this.setHandPositions(15, -15);
+        this.setHandPositions(CONFIG.HAND_BASE_ANGLE, -CONFIG.HAND_BASE_ANGLE);
         break;
 
       case 3: // Strafe left
         const leftDir = Utils.normalize(dx, dy);
         moveX = leftDir.y * CONFIG.MOVE_SPEED;
         moveY = -leftDir.x * CONFIG.MOVE_SPEED;
-        this.setHandPositions(15, -15);
+        this.setHandPositions(CONFIG.HAND_BASE_ANGLE, -CONFIG.HAND_BASE_ANGLE);
         break;
 
       case 4: // Left jab
@@ -511,8 +512,8 @@ class Game {
       agent.state = Math.floor(Math.random() * 11);
 
       if (oldState >= 4 && oldState <= 7 && agent.state < 4) {
-        agent.hands[0].targetAngle = 15;
-        agent.hands[1].targetAngle = -15;
+        agent.hands[0].targetAngle = CONFIG.HAND_BASE_ANGLE;
+        agent.hands[1].targetAngle = -CONFIG.HAND_BASE_ANGLE;
       }
 
       if (agent.state === 4) {
@@ -559,15 +560,15 @@ class Game {
       this.agents[1].velocity = { x: 0, y: 0 };
 
       this.agents.forEach((agent) => {
-        agent.hands[0].angle = 15;
-        agent.hands[0].targetAngle = 15;
+        agent.hands[0].angle = CONFIG.HAND_BASE_ANGLE;
+        agent.hands[0].targetAngle = CONFIG.HAND_BASE_ANGLE;
         agent.hands[0].len = CONFIG.BASE_HAND_LEN;
         agent.hands[0].targetLen = CONFIG.BASE_HAND_LEN;
         agent.hands[0].extending = false;
         agent.hands[0].retracting = false;
 
-        agent.hands[1].angle = -15;
-        agent.hands[1].targetAngle = -15;
+        agent.hands[1].angle = -CONFIG.HAND_BASE_ANGLE;
+        agent.hands[1].targetAngle = -CONFIG.HAND_BASE_ANGLE;
         agent.hands[1].len = CONFIG.BASE_HAND_LEN;
         agent.hands[1].targetLen = CONFIG.BASE_HAND_LEN;
         agent.hands[1].extending = false;
