@@ -1,3 +1,5 @@
+import { sendCoaching } from './commApi.js';
+
 const CONFIG = {
   ARENA_SIZE: 500,
   RENDER_INTERVAL: 16,
@@ -670,6 +672,13 @@ function gameLoop(currentTime) {
   requestAnimationFrame(gameLoop);
 }
 
+export function syncAgent(agentIdx, agentData) {
+  let agent = game.agents[agentIdx];
+  if (!agent) return;
+
+  console.log("SYNC " + agent + " WITH " + agentData);
+}
+
 requestAnimationFrame(gameLoop);
 
 function sendCoachMessage() {
@@ -680,9 +689,14 @@ function sendCoachMessage() {
     addChatMessage(1, message);
     textarea.value = "";
 
-    console.log(`Your coaching instructions:`, message);
+    sendCoaching(message).then((response) => {
+      console.log("COACHING RESPONSE " + response);
+    });
   }
 }
+const coachBtn = document.getElementById("coachBtn");
+coachBtn.addEventListener('click', sendCoachMessage);
+
 
 function addChatMessage(coachNumber, message) {
   const chatMessages = document.getElementById("chatMessages");
@@ -708,6 +722,7 @@ function clearChat() {
   const chatMessages = document.getElementById("chatMessages");
   chatMessages.innerHTML = ``;
 }
+window.clearChat = clearChat;
 
 document.getElementById("coachInput").addEventListener("keydown", function (e) {
   if (e.key === "Enter" && e.ctrlKey) {
