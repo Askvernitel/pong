@@ -270,18 +270,10 @@ class Agent {
       y: this.pos.y + Math.sin(angleRad) * hand.len,
     };
 
-    const bodyDistance = Utils.distance(handPos, target.pos);
-    if (
-      bodyDistance <= CONFIG.AGENT_RADIUS + CONFIG.AGENT_HAND_RADIUS &&
-      hand.extending
-    ) {
-      this.dealDamage(target, CONFIG.BODY_COLLISION_DMG, handPos);
-      hand.extending = false;
-      hand.retracting = true;
-      this.applyKnockback(target, handPos);
-    }
-
+    let debounce = false;
     target.hands.forEach((targetHand, targetHandIndex) => {
+      if (debounce) return;
+
       const targetAngleRad = Utils.toRadians(target.rot + targetHand.angle);
       const targetHandPos = {
         x: target.pos.x + Math.cos(targetAngleRad) * targetHand.len,
@@ -290,6 +282,8 @@ class Agent {
 
       const handDistance = Utils.distance(handPos, targetHandPos);
       if (handDistance <= CONFIG.AGENT_HAND_RADIUS * 2 && hand.extending) {
+        debounce = true;
+
         this.dealDamage(target, CONFIG.HAND_COLLISION_DMG, targetHandPos);
         hand.extending = false;
         hand.retracting = true;
@@ -302,6 +296,19 @@ class Agent {
         );
       }
     });
+
+    if (debounce) return;
+
+    const bodyDistance = Utils.distance(handPos, target.pos);
+    if (
+      bodyDistance <= CONFIG.AGENT_RADIUS + CONFIG.AGENT_HAND_RADIUS &&
+      hand.extending
+    ) {
+      this.dealDamage(target, CONFIG.BODY_COLLISION_DMG, handPos);
+      hand.extending = false;
+      hand.retracting = true;
+      this.applyKnockback(target, handPos);
+    }
   }
 
   handleHandCollisionResponse(
