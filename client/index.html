@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title></title>
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="gameContainer">
+      <canvas id="mainCanvas" width="500" height="500"></canvas>
+      <div class="game-info">
+        <div>
+          Agent 0 HP: <span id="agent0hp">100</span> | Agent 1 HP:
+          <span id="agent1hp">100</span>
+        </div>
+      </div>
+      <div class="controls">
+        Auto-battle simulation with dynamic movement and collision detection
+      </div>
+
+      <div class="input-section">
+        <div class="coach-input">
+          <label for="coachInput">Your Instructions (Agent 0 - Green):</label>
+          <textarea
+            id="coachInput"
+            placeholder="Enter coaching instructions for your fighter..."
+          ></textarea>
+          <button onclick="sendCoachMessage()">Send Instructions</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="chatContainer">
+      <div class="chat-header">
+        Coaching Chat
+        <button class="clear-chat" onclick="clearChat()">Clear</button>
+      </div>
+      <div class="chat-messages" id="chatMessages"></div>
+    </div>
+
+    <script src="renderer.js"></script>
+  </body>
+</html>
