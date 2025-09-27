@@ -395,9 +395,8 @@ class Agent {
 
     if (this.damageFlash > 0) {
       const flashIntensity = Math.sin(this.damageFlash * 0.05) * 0.5 + 0.5;
-      ctx.fillStyle = `rgb(${
-        255 * flashIntensity + 217 * (1 - flashIntensity)
-      }, ${217 * (1 - flashIntensity)}, ${217 * (1 - flashIntensity)})`;
+      ctx.fillStyle = `rgb(${255 * flashIntensity + 217 * (1 - flashIntensity)
+        }, ${217 * (1 - flashIntensity)}, ${217 * (1 - flashIntensity)})`;
     } else {
       ctx.fillStyle = this.color;
     }
@@ -438,11 +437,11 @@ class Agent {
         handPos.x =
           target.pos.x +
           directionToHand.x *
-            (CONFIG.AGENT_RADIUS + CONFIG.AGENT_HAND_RADIUS - 2);
+          (CONFIG.AGENT_RADIUS + CONFIG.AGENT_HAND_RADIUS - 2);
         handPos.y =
           target.pos.y +
           directionToHand.y *
-            (CONFIG.AGENT_RADIUS + CONFIG.AGENT_HAND_RADIUS - 2);
+          (CONFIG.AGENT_RADIUS + CONFIG.AGENT_HAND_RADIUS - 2);
       }
 
       ctx.beginPath();
@@ -660,7 +659,7 @@ function clearChat() {
   chatMessages.innerHTML = ``;
 }
 
-document.getElementById("coachInput").addEventListener("keydown", function (e) {
+document.getElementById("coachInput").addEventListener("keydown", function(e) {
   if (e.key === "Enter" && e.ctrlKey) {
     sendCoachMessage();
     e.preventDefault();
