@@ -212,15 +212,15 @@ class Agent {
         break;
 
       case 8: // Defense center
-        this.setHandPositions(0, 0);
+        this.setHandPositions(15, 15);
         break;
 
       case 9: // Defense right
-        this.setHandPositions(-30, -10);
+        this.setHandPositions(-25, -65);
         break;
 
       case 10: // Defense left
-        this.setHandPositions(30, 10);
+        this.setHandPositions(25, 65);
         break;
     }
 
@@ -488,6 +488,7 @@ class Game {
 
     gameState.agents = this.agents;
     this.lastStateChange = 0;
+    this.winner = -1;
   }
 
   update(currentTime, deltaTime) {
@@ -539,9 +540,12 @@ class Game {
 
   handleGameOver() {
     const winner = this.agents[0].hp > 0 ? this.agents[0] : this.agents[1];
+    this.winner = winner;
     console.log(`Game Over! ${winner.name} wins!`);
 
     setTimeout(() => {
+      this.winner = -1;
+
       this.agents[0].pos = { x: CONFIG.AGENT_RADIUS, y: CONFIG.AGENT_RADIUS };
       this.agents[0].hp = this.agents[0].maxHp;
       this.agents[0].damageFlash = 0;
@@ -581,6 +585,43 @@ class Game {
   }
 
   render(ctx) {
+    if (this.winner != -1) {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
+      ctx.fillRect(0, 0, CONFIG.ARENA_SIZE, CONFIG.ARENA_SIZE);
+
+      ctx.fillStyle = this.winner === 0 ? "#4CAF50" : "#2196F3";
+      ctx.font = "bold 48px Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      const winnerText = this.winner === 0 ? "YOU WIN!" : "YOU LOSE!";
+      ctx.fillText(
+        winnerText,
+        CONFIG.ARENA_SIZE / 2,
+        CONFIG.ARENA_SIZE / 2 - 40
+      );
+
+      ctx.fillStyle = "white";
+      ctx.font = "24px Arial";
+      const agentName =
+        this.winner === 0 ? "Agent 0 Victory" : "Agent 1 Victory";
+      ctx.fillText(
+        agentName,
+        CONFIG.ARENA_SIZE / 2,
+        CONFIG.ARENA_SIZE / 2 + 10
+      );
+
+      ctx.font = "18px Arial";
+      ctx.fillStyle = "#aaa";
+      ctx.fillText(
+        "Restarting in a few seconds...",
+        CONFIG.ARENA_SIZE / 2,
+        CONFIG.ARENA_SIZE / 2 + 50
+      );
+
+      return;
+    }
+
     const gradient = ctx.createLinearGradient(0, 0, 0, CONFIG.ARENA_SIZE);
     gradient.addColorStop(0, "#2c3e50");
     gradient.addColorStop(1, "#34495e");
