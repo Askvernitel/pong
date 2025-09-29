@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -27,7 +28,7 @@ func NewPlayerHandler(hub services.IHub, ticker services.ITicker) *PlayerHandler
 	return &PlayerHandler{hub: hub, ticker: ticker}
 }
 func (h *PlayerHandler) HandleConn(w http.ResponseWriter, r *http.Request) {
-
+	fmt.Println("REQUEST")
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
@@ -35,10 +36,12 @@ func (h *PlayerHandler) HandleConn(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_, msg, _ := conn.ReadMessage()
+	fmt.Println("Connect:" + string(msg))
 	p := &models.Player{}
 	err = json.Unmarshal(msg, p)
 	if err != nil {
 		panic(err)
 	}
-	h.hub.RegisterPlayer(p.Name, conn)
+	provider := services.NewGeminiProvider()
+	h.hub.RegisterPlayer(p.Name, conn, provider)
 }

@@ -1,6 +1,6 @@
 import { syncAgent } from './renderer.js';
 
-const ws = new WebSocket("wss://asd.com/ws");
+const ws = new WebSocket("wss://localhost:8888/ws");
 const API_LINK = "asd/api/asd"
 
 export async function sendCoaching(msg) {

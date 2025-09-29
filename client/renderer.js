@@ -1,6 +1,7 @@
 import { sendCoaching } from './commApi.js';
 
 const CONFIG = {
+  API_URL:"localhost:8888",
   ARENA_SIZE: 500,
   RENDER_INTERVAL: 16,
   AGENT_HAND_RADIUS: 20,
@@ -22,8 +23,10 @@ const gameState = {
   canvas: document.getElementById("mainCanvas"),
   ctx: null,
   agents: [],
+  connected : false,
   damageIndicators: [],
   lastTime: 0,
+  playerName: ""
 };
 
 gameState.ctx = gameState.canvas.getContext("2d");
@@ -56,6 +59,7 @@ const Utils = {
 
 class Agent {
   constructor(name, x, y, color = "#D9D9D9") {
+    
     this.name = name;
     this.pos = { x, y };
     this.velocity = { x: 0, y: 0 };
@@ -67,7 +71,6 @@ class Agent {
     this.color = color;
     this.knockbackTimer = 0;
     this.damageFlash = 0;
-
     this.hands = [
       {
         angle: CONFIG.HAND_BASE_ANGLE,
@@ -482,12 +485,109 @@ class Agent {
   }
 }
 
+
+
+
+class Connection{ 
+  connContainer;
+  constructor(game){
+    this.game = game
+    this.socket = null
+    let elem = document.getElementById("gameContainer");
+    elem.style.display = "none"
+    let cont = document.getElementById("connButtonContainer")
+    this.connContainer = cont; 
+    cont.children[1].addEventListener("click",(event)=>{
+      let name = cont.children[0].value
+      this.handleConnection.bind(this)(name,elem);
+    })
+  }
+
+  handleConnection(name, elem){
+    gameState.playerName =name;
+    try{
+      console.log("ELEM:", elem, " ", name);
+      this.socket = new WebSocket("ws://" + CONFIG.API_URL + "/ws");
+      this.socket.addEventListener("open", () => {
+        elem.style.display="block"
+        this.socket.send(JSON.stringify({ name:name }));
+        gameState.connected = true;
+      });
+
+      this.socket.addEventListener("message", (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === "GAME") {
+            this.syncRemoteGame(event.data)
+          }
+        } catch (e) {
+          console.error("Invalid server message", e);
+        }
+      });
+
+      this.socket.addEventListener("close", () => {
+        console.log("Disconnected from server");
+      });
+
+      this.socket.addEventListener("error", (err) => {
+        console.error("WebSocket error", err);
+      });
+    }catch(e){
+      console.error(e);
+    }
+  }
+  
+  syncRemoteGame(data){
+    console.log("HEY");
+    let agent = JSON.parse(data)
+    let payload = JSON.parse(agent.Payload)
+    //let gameAgent = this.game.agents[1];
+    this.game.agents[1].pos.x = payload.playerData.posX;
+    this.game.agents[1].pos.y = payload.playerData.posY;
+    this.game.agents[1].velocity.x = payload.playerData.velocityX;
+    this.game.agents[1].velocity.y = payload.playerData.velocityY;
+    this.game.agents[1].rot = payload.playerData.rotation;
+    this.game.agents[1].targetRot = payload.playerData.targetRotation;
+    this.game.agents[1].state = payload.playerData.state;
+    this.game.agents[1].hp = payload.playerData.hp;
+    this.game.agents[1].maxHp = payload.playerData.maxHp;
+    this.game.agents[1].knockbackTimer = payload.playerData.knockbackTimer;
+    this.game.agents[1].damageFlash = payload.playerData.damageFlash;
+    this.game.agents[1].hands = JSON.parse(payload.playerData.hands);
+
+  }
+  syncLocalGame(){
+    this.socket.send(
+      JSON.stringify({
+        name:gameState.playerName,
+        playerData:{
+        posX:this.game.agents[0].pos.x,
+        posY:this.game.agents[0].pos.y,
+        velocityX: this.game.agents[0].velocity.x,
+        velocityY: this.game.agents[0].velocity.y,
+        rotation: this.game.agents[0].rot,
+        targetRotation:this.game.agents[0].targetRot,
+        state: this.game.agents[0].state,
+        hp:this.game.agents[0].hp,
+        maxHp:this.game.agents[0].maxHp,
+        color:this.game.agents[0].color,
+        knockbackTimer:this.game.agents[0].knockbackTimer,
+        damageFlash:this.game.agents[0].damageFlash,
+        hands:this.game.agents[0].hands
+        }
+      })
+    );
+  }
+
+}
 class Game {
   constructor() {
+    this.conn = new Connection(this)
+
     this.agents = [
-      new Agent("Agent0", CONFIG.AGENT_RADIUS, CONFIG.AGENT_RADIUS, "#4CAF50"),
+      new Agent("PlayerLocal", CONFIG.AGENT_RADIUS, CONFIG.AGENT_RADIUS, "#4CAF50"),
       new Agent(
-        "Agent1",
+        "PlayerOnline",
         CONFIG.ARENA_SIZE - CONFIG.AGENT_RADIUS,
         CONFIG.ARENA_SIZE - CONFIG.AGENT_RADIUS,
         "#2196F3"
@@ -664,10 +764,14 @@ let lastTime = 0;
 function gameLoop(currentTime) {
   const deltaTime = currentTime - lastTime;
   lastTime = currentTime;
-
+  if(!gameState.connected){
+    requestAnimationFrame(gameLoop);
+    return;
+  }
   game.update(currentTime, deltaTime);
   game.render(gameState.ctx);
-
+  
+  game.conn.syncLocalGame();
   requestAnimationFrame(gameLoop);
 }
 
@@ -675,7 +779,7 @@ export function syncAgent(agentIdx, agentData) {
   let agent = game.agents[agentIdx];
   if (!agent) return;
 
-  console.log("SYNC " + agent + " WITH " + agentData);
+  
 }
 
 requestAnimationFrame(gameLoop);
