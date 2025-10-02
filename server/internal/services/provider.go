@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"google.golang.org/genai"
@@ -14,6 +15,8 @@ const (
 		if you think you should run send "2" **NO MARKUP"" Plain 2.	
 	`
 )
+
+var mapAIToProviders map[string]Provider = make(map[string]Provider)
 
 type Provider interface {
 	SendRequest() string
@@ -49,4 +52,16 @@ func (p *GeminiProvider) SendRequest() string {
 		log.Fatal(err)
 	}
 	return result.Text()
+}
+
+func RegisterPlayerToProvider(name string, provider Provider) {
+	mapAIToProviders[name] = provider
+}
+
+func GetPlayerProviderByName(name string) (Provider, error) {
+	res, ok := mapAIToProviders[name]
+	if !ok {
+		return nil, fmt.Errorf("Provider Not Found")
+	}
+	return res, nil
 }

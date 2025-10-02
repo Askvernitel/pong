@@ -26,6 +26,14 @@ type PlayerData struct {
 	DamageFlash    float64        `json:"damageFlash"`
 	Hands          []*PlayerHands `json:"hands"`
 }
+
+type ProviderRequest struct {
+	Name string `json:"name"`
+	Msg  string `json:"msg"`
+}
+type ProviderResponse struct {
+	State string `json:"state"`
+}
 type PlayerHands struct {
 	Angle       float64 `json:"angle"`
 	TargetAngle float64 `json:"targetAngle"`

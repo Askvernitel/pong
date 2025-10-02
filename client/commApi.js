@@ -1,7 +1,5 @@
-import { syncAgent } from './renderer.js';
-
-const ws = new WebSocket("wss://localhost:8888/ws");
-const API_LINK = "asd/api/asd"
+import { syncAgent, gameState} from './renderer.js';
+const API_LINK = "http://localhost:8888/provider/response"
 
 export async function sendCoaching(msg) {
     try {
@@ -10,7 +8,7 @@ export async function sendCoaching(msg) {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ message: msg })
+            body: JSON.stringify({name:gameState.playerName, msg: msg })
         });
 
         if (!response.ok) {
@@ -24,8 +22,3 @@ export async function sendCoaching(msg) {
         throw err;
     }
 }
-
-ws.addEventListener("message", (event) => {
-    const data = JSON.parse(event.data);
-    console.log("Received:", data);
-});

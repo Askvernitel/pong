@@ -19,7 +19,7 @@ const CONFIG = {
   HAND_SMOOTHING: 0.15,
 };
 
-const gameState = {
+export const gameState = {
   canvas: document.getElementById("mainCanvas"),
   ctx: null,
   agents: [],
@@ -536,7 +536,9 @@ class Connection{
       console.error(e);
     }
   }
-  
+  syncStart(name, data) {
+        this.socket.send(JSON.stringify({ name:gameState.playerName}));
+  }
   syncRemoteGame(data){
     console.log("HEY");
     let agent = JSON.parse(data)
@@ -554,7 +556,6 @@ class Connection{
     this.game.agents[1].knockbackTimer = payload.playerData.knockbackTimer;
     this.game.agents[1].damageFlash = payload.playerData.damageFlash;
     this.game.agents[1].hands = JSON.parse(payload.playerData.hands);
-
   }
   syncLocalGame(){
     this.socket.send(
