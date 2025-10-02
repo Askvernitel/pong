@@ -42,6 +42,7 @@ func (h *PlayerHandler) HandleConn(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	provider := services.NewGeminiProvider()
+	provider := services.NewLlamaProvider("http://127.0.0.1:6969")
+	services.RegisterPlayerToProvider(p.Name, provider)
 	h.hub.RegisterPlayer(p.Name, conn, provider)
 }

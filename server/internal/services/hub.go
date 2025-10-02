@@ -19,10 +19,16 @@ type PlayerConn struct {
 }
 
 func (pl *PlayerConn) WriteMessage(t int, msg []byte) {
-	pl.AIProvider.AppendData(msg)
-	fmt.Println(string(msg))
-	msgPlayer := models.Message{Type: "GAME", Payload: string(msg)}
-	//	go pl.WriteAIMessage(t)
+	//pl.AIProvider.AppendData(msg)
+	//fmt.Println(string(msg))
+
+	var payload interface{}
+	if err := json.Unmarshal(msg, &payload); err != nil {
+		fmt.Println("Invalid JSON payload:", err)
+		return
+	}
+
+	msgPlayer := models.Message{Type: "GAME", Payload: payload}
 	pl.Conn.WriteMessage(t, msgPlayer.Serialized())
 }
 func (pl *PlayerConn) WriteAIMessage(t int) {

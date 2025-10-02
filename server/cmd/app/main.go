@@ -1,11 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"os"
+	"time"
+
 	"pong.ge/internal/handlers"
 	"pong.ge/internal/services"
-	"time"
 )
 
 func main() {
@@ -20,6 +22,7 @@ func main() {
 	serveMux.HandleFunc("/ws", playerHandler.HandleConn)
 	serveMux.HandleFunc("/provider/response", AIHandler.HandleCoachRequest)
 	go ticker.Run()
+	fmt.Printf("READY!")
 	if err := http.ListenAndServe(":8888", serveMux); err != nil {
 		panic(err)
 	}

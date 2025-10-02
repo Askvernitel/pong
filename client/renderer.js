@@ -1,7 +1,7 @@
-import { sendCoaching } from './commApi.js';
+import { sendCoaching } from "./commApi.js";
 
 const CONFIG = {
-  API_URL:"localhost:8888",
+  API_URL: "localhost:8888",
   ARENA_SIZE: 500,
   RENDER_INTERVAL: 16,
   AGENT_HAND_RADIUS: 20,
@@ -23,10 +23,10 @@ export const gameState = {
   canvas: document.getElementById("mainCanvas"),
   ctx: null,
   agents: [],
-  connected : false,
+  connected: false,
   damageIndicators: [],
   lastTime: 0,
-  playerName: ""
+  playerName: "",
 };
 
 gameState.ctx = gameState.canvas.getContext("2d");
@@ -59,7 +59,6 @@ const Utils = {
 
 class Agent {
   constructor(name, x, y, color = "#D9D9D9") {
-    
     this.name = name;
     this.pos = { x, y };
     this.velocity = { x: 0, y: 0 };
@@ -408,8 +407,9 @@ class Agent {
 
     if (this.damageFlash > 0) {
       const flashIntensity = Math.sin(this.damageFlash * 0.05) * 0.5 + 0.5;
-      ctx.fillStyle = `rgb(${255 * flashIntensity + 217 * (1 - flashIntensity)
-        }, ${217 * (1 - flashIntensity)}, ${217 * (1 - flashIntensity)})`;
+      ctx.fillStyle = `rgb(${
+        255 * flashIntensity + 217 * (1 - flashIntensity)
+      }, ${217 * (1 - flashIntensity)}, ${217 * (1 - flashIntensity)})`;
     } else {
       ctx.fillStyle = this.color;
     }
@@ -450,11 +450,11 @@ class Agent {
         handPos.x =
           target.pos.x +
           directionToHand.x *
-          (CONFIG.AGENT_RADIUS + CONFIG.AGENT_HAND_RADIUS - 2);
+            (CONFIG.AGENT_RADIUS + CONFIG.AGENT_HAND_RADIUS - 2);
         handPos.y =
           target.pos.y +
           directionToHand.y *
-          (CONFIG.AGENT_RADIUS + CONFIG.AGENT_HAND_RADIUS - 2);
+            (CONFIG.AGENT_RADIUS + CONFIG.AGENT_HAND_RADIUS - 2);
       }
 
       ctx.beginPath();
@@ -485,32 +485,29 @@ class Agent {
   }
 }
 
-
-
-
-class Connection{ 
+class Connection {
   connContainer;
-  constructor(game){
-    this.game = game
-    this.socket = null
+  constructor(game) {
+    this.game = game;
+    this.socket = null;
     let elem = document.getElementById("gameContainer");
-    elem.style.display = "none"
-    let cont = document.getElementById("connButtonContainer")
-    this.connContainer = cont; 
-    cont.children[1].addEventListener("click",(event)=>{
-      let name = cont.children[0].value
-      this.handleConnection.bind(this)(name,elem);
-    })
+    elem.style.display = "none";
+    let cont = document.getElementById("connButtonContainer");
+    this.connContainer = cont;
+    cont.children[1].addEventListener("click", (event) => {
+      let name = cont.children[0].value;
+      this.handleConnection.bind(this)(name, elem);
+    });
   }
 
-  handleConnection(name, elem){
-    gameState.playerName =name;
-    try{
+  handleConnection(name, elem) {
+    gameState.playerName = name;
+    try {
       console.log("ELEM:", elem, " ", name);
       this.socket = new WebSocket("ws://" + CONFIG.API_URL + "/ws");
       this.socket.addEventListener("open", () => {
-        elem.style.display="block"
-        this.socket.send(JSON.stringify({ name:name }));
+        elem.style.display = "block";
+        this.socket.send(JSON.stringify({ name: name }));
         gameState.connected = true;
       });
 
@@ -518,7 +515,7 @@ class Connection{
         try {
           const data = JSON.parse(event.data);
           if (data.type === "GAME") {
-            this.syncRemoteGame(event.data)
+            this.syncRemoteGame(data);
           }
         } catch (e) {
           console.error("Invalid server message", e);
@@ -532,17 +529,16 @@ class Connection{
       this.socket.addEventListener("error", (err) => {
         console.error("WebSocket error", err);
       });
-    }catch(e){
+    } catch (e) {
       console.error(e);
     }
   }
   syncStart(name, data) {
-        this.socket.send(JSON.stringify({ name:gameState.playerName}));
+    this.socket.send(JSON.stringify({ name: gameState.playerName }));
   }
-  syncRemoteGame(data){
+  syncRemoteGame(data) {
     console.log("HEY");
-    let agent = JSON.parse(data)
-    let payload = JSON.parse(agent.Payload)
+    let payload = data.Payload;
     //let gameAgent = this.game.agents[1];
     this.game.agents[1].pos.x = payload.playerData.posX;
     this.game.agents[1].pos.y = payload.playerData.posY;
@@ -555,38 +551,42 @@ class Connection{
     this.game.agents[1].maxHp = payload.playerData.maxHp;
     this.game.agents[1].knockbackTimer = payload.playerData.knockbackTimer;
     this.game.agents[1].damageFlash = payload.playerData.damageFlash;
-    this.game.agents[1].hands = JSON.parse(payload.playerData.hands);
+    //this.game.agents[1].hands = payload.playerData.hands;
   }
-  syncLocalGame(){
+  syncLocalGame() {
     this.socket.send(
       JSON.stringify({
-        name:gameState.playerName,
-        playerData:{
-        posX:this.game.agents[0].pos.x,
-        posY:this.game.agents[0].pos.y,
-        velocityX: this.game.agents[0].velocity.x,
-        velocityY: this.game.agents[0].velocity.y,
-        rotation: this.game.agents[0].rot,
-        targetRotation:this.game.agents[0].targetRot,
-        state: this.game.agents[0].state,
-        hp:this.game.agents[0].hp,
-        maxHp:this.game.agents[0].maxHp,
-        color:this.game.agents[0].color,
-        knockbackTimer:this.game.agents[0].knockbackTimer,
-        damageFlash:this.game.agents[0].damageFlash,
-        hands:this.game.agents[0].hands
-        }
+        name: gameState.playerName,
+        playerData: {
+          posX: this.game.agents[0].pos.x,
+          posY: this.game.agents[0].pos.y,
+          velocityX: this.game.agents[0].velocity.x,
+          velocityY: this.game.agents[0].velocity.y,
+          rotation: this.game.agents[0].rot,
+          targetRotation: this.game.agents[0].targetRot,
+          state: this.game.agents[0].state,
+          hp: this.game.agents[0].hp,
+          maxHp: this.game.agents[0].maxHp,
+          color: this.game.agents[0].color,
+          knockbackTimer: this.game.agents[0].knockbackTimer,
+          damageFlash: this.game.agents[0].damageFlash,
+          hands: this.game.agents[0].hands,
+        },
       })
     );
   }
-
 }
 class Game {
   constructor() {
-    this.conn = new Connection(this)
+    this.conn = new Connection(this);
 
     this.agents = [
-      new Agent("PlayerLocal", CONFIG.AGENT_RADIUS, CONFIG.AGENT_RADIUS, "#4CAF50"),
+      new Agent(
+        "PlayerLocal",
+        CONFIG.AGENT_RADIUS,
+        CONFIG.AGENT_RADIUS,
+        "#4CAF50"
+      ),
       new Agent(
         "PlayerOnline",
         CONFIG.ARENA_SIZE - CONFIG.AGENT_RADIUS,
@@ -617,6 +617,9 @@ class Game {
   }
 
   decideStates() {
+    // Trying to make it pure AI now
+    if (true) return;
+
     this.agents.forEach((agent) => {
       const oldState = agent.state;
       agent.state = Math.floor(Math.random() * 11);
@@ -765,13 +768,13 @@ let lastTime = 0;
 function gameLoop(currentTime) {
   const deltaTime = currentTime - lastTime;
   lastTime = currentTime;
-  if(!gameState.connected){
+  if (!gameState.connected) {
     requestAnimationFrame(gameLoop);
     return;
   }
   game.update(currentTime, deltaTime);
   game.render(gameState.ctx);
-  
+
   game.conn.syncLocalGame();
   requestAnimationFrame(gameLoop);
 }
@@ -779,8 +782,6 @@ function gameLoop(currentTime) {
 export function syncAgent(agentIdx, agentData) {
   let agent = game.agents[agentIdx];
   if (!agent) return;
-
-  
 }
 
 requestAnimationFrame(gameLoop);
@@ -794,13 +795,59 @@ function sendCoachMessage() {
     textarea.value = "";
 
     sendCoaching(message).then((response) => {
-      console.log("COACHING RESPONSE " + response);
+      console.log("Response");
+      console.log(response);
+
+      const str = response.state; // AI output as string
+      if (typeof str !== "string") {
+        console.log("No string in response.state:", str);
+        return;
+      }
+      console.log("String:");
+      console.log(str);
+
+      const thoughtMatch = str.match(/"thought"\s*:\s*"([^"]*)"/);
+      if (thoughtMatch && thoughtMatch[1]) {
+        var newThought = thoughtMatch[1];
+        console.log("Coach thought:", newThought);
+        addAIMessage(1, newThought);
+      } else {
+        console.log("Could not find coach thought in response:", str);
+      }
+
+      const stateMatch = str.match(/"state"\s*:\s*(\d+)/);
+      const state = stateMatch ? parseInt(stateMatch[1], 10) : null;
+      if (state !== null) {
+        console.log("Coach state:", state);
+        game.agents[0].state = state;
+      } else {
+        console.log("Could not find coach state.");
+      }
     });
   }
 }
 const coachBtn = document.getElementById("coachBtn");
-coachBtn.addEventListener('click', sendCoachMessage);
+coachBtn.addEventListener("click", sendCoachMessage);
 
+function addAIMessage(aiNum, message) {
+  const chatMessages = document.getElementById("agentThoughts");
+  const messageDiv = document.createElement("div");
+  messageDiv.className = `message coach${aiNum}`;
+
+  const headerDiv = document.createElement("div");
+  headerDiv.className = "message-header";
+  const coachName = aiNum === 1 ? "You (Agent 0)" : "Opponent (Agent 1)";
+  headerDiv.textContent = `${coachName} - ${new Date().toLocaleTimeString()}`;
+
+  const contentDiv = document.createElement("div");
+  contentDiv.textContent = message;
+
+  messageDiv.appendChild(headerDiv);
+  messageDiv.appendChild(contentDiv);
+  chatMessages.appendChild(messageDiv);
+
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
 
 function addChatMessage(coachNumber, message) {
   const chatMessages = document.getElementById("chatMessages");
@@ -828,7 +875,7 @@ function clearChat() {
 }
 window.clearChat = clearChat;
 
-document.getElementById("coachInput").addEventListener("keydown", function(e) {
+document.getElementById("coachInput").addEventListener("keydown", function (e) {
   if (e.key === "Enter" && e.ctrlKey) {
     sendCoachMessage();
     e.preventDefault();

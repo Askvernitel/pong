@@ -49,8 +49,8 @@ type Player struct {
 }
 
 type Message struct {
-	Type    string `json:"type"`
-	Payload string `json:"Payload"`
+	Type    string      `json:"type"`
+	Payload interface{} `json:"Payload"`
 }
 
 func (m *Message) Serialized() []byte {

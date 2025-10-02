@@ -17,40 +17,45 @@ func NewAIHandler() *AIHandler {
 	return &AIHandler{}
 }
 func (ah *AIHandler) HandleCoachRequest(w http.ResponseWriter, r *http.Request) {
-
 	w.Header().Set("Access-Control-Allow-Origin", "http://127.0.0.1:5500")
 	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
 	reqBody, err := io.ReadAll(r.Body)
-
-	fmt.Println("TTHERE")
-	if err != nil {
-		w.WriteHeader(403)
+	if err != nil || len(reqBody) == 0 {
+		fmt.Println("Empty or unreadable body:", err)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	fmt.Println("PTHERE")
+
+	fmt.Println("Raw body:", string(reqBody))
 	parsed := &models.ProviderRequest{}
-	fmt.Println("ReqBody" + string(reqBody))
-	err = json.Unmarshal(reqBody, parsed)
-	if err != nil {
-		w.WriteHeader(403)
+	if err := json.Unmarshal(reqBody, parsed); err != nil {
+		fmt.Println("Unmarshal error:", err)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	fmt.Println("THERE")
 	provider, err := services.GetPlayerProviderByName(parsed.Name)
 	if err != nil {
-		w.WriteHeader(403)
+		fmt.Println("Could not find provider:", err)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	fmt.Println("HERE")
+
+	provider.AppendData([]byte(parsed.Msg))
 	AIresponse := provider.SendRequest()
 
-	response, err := json.Marshal(&models.ProviderResponse{State: AIresponse})
-	if err != nil {
-		w.Write([]byte(err.Error()))
-		return
-	}
-	w.Header().Set("contentType", "application/json")
+	provider.AppendData([]byte(AIresponse))
+
+	fmt.Println("Response: ", string(AIresponse))
+
+	response, _ := json.Marshal(&models.ProviderResponse{State: AIresponse})
+	w.Header().Set("Content-Type", "application/json")
 	w.Write(response)
 }
